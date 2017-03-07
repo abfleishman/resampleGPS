@@ -21,7 +21,6 @@ for(i in 1:length(list.files("Functions"))) {
   source(list.files("Functions",full.names = T)[i])
 }
 
-
 # import gps data
 data<-readRDS(paste0(dir,"SGRK_DATA/processedDATA_2015/GPSrlki_raw.rda"))
 
@@ -73,3 +72,18 @@ dataT$InterPointTime<-InterpointTime(dataT,ID = "CaptureID",DateTime = "DateTime
 
 #deleates one point not eliminated by speed filter
 dataT <- dataT[-c(31830), ]
+
+
+dataT<-filter(dataT,CaptureNum==35)
+
+head(dataT)
+
+dataT$Bering<-BearingFromPoint(dataIn = dataT,ID = "CaptureID",lat = "Latitude",lon = "Longitude")
+library(circular)
+dataT$Bering<-as.circular(dataT$Bering,type="directions",units = "degrees")
+# Azimuth departure -------------------------------------------------------
+dataT %>% 
+  group_by(TripNum) %>% 
+  filter(n()>30) %>% 
+  summarise(n=n(),DepartA=mean.circular(Bering[1:5]),
+            ReturnA=mean(Bering[length(Bering)-5:length(Bering)]))
