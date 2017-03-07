@@ -1,0 +1,24 @@
+# Trip Metrics
+* Azimuth -departure
+* Azimuth - return
+* Azimuth - colony to max dist
+* time of day - departure
+* time of day - arrival
+* time of day - max dist
+* distance
+  * max distance
+  * trip length
+  * trip duration
+  * mean trip speed
+  * 
+
+# along track metrics
+* % time
+  * resting
+  * searching
+  * transiting
+  * diving
+  * flapping
+  * gliding
+  * Number of landings per hour (other time unit)
+  * 
