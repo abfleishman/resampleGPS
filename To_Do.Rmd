@@ -13,12 +13,12 @@
   * 
 
 # along track metrics
-* % time
-  * resting
-  * searching
-  * transiting
-  * diving
-  * flapping
-  * gliding
-  * Number of landings per hour (other time unit)
+  * % time
+    * resting
+    * searching
+    * transiting
+    * diving
+    * flapping
+    * gliding
+    * Number of landings per hour (other time unit)
   * 
