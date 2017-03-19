@@ -11,7 +11,6 @@ library(dplyr)
 library(stringr)
 library(lubridate)
 library(ggplot2)
-library(doBy)
 library(tidyr)
 
 library(argosfilter)
@@ -75,15 +74,28 @@ dataT <- dataT[-c(31830), ]
 
 
 dataT<-filter(dataT,CaptureNum==35)
-
+plot(dataT$Longitude,dataT$Latitude)
 head(dataT)
 
 dataT$Bering<-BearingFromPoint(dataIn = dataT,ID = "CaptureID",lat = "Latitude",lon = "Longitude")
 library(circular)
 dataT$Bering<-as.circular(dataT$Bering,type="directions",units = "degrees")
+
 # Azimuth departure -------------------------------------------------------
-dataT %>% 
-  group_by(TripNum) %>% 
+TripTab<-dataT %>% 
+  group_by(CaptureID,TripNum) %>% 
   filter(n()>30) %>% 
-  summarise(n=n(),DepartA=mean.circular(Bering[1:5]),
-            ReturnA=mean(Bering[length(Bering)-5:length(Bering)]))
+  summarise(Points=n(),
+            DepartA=mean.circular(Bering[1:5]),
+            ReturnA=mean(Bering[length(Bering)-5:length(Bering)]),
+            Start=min(DateTime),
+            End=max(DateTime),
+            Max_Dist_Time=DateTime[Dist2Colony==max(Dist2Colony,na.rm=T)],
+            Dist_m=sum(InterPointDist,na.rm=T),
+            Max_Dist=max(Dist2Colony,na.rm=T),
+            Mean_Speed=mean(Speed,na.rm=T)
+            ) %>% 
+  mutate(Duration=difftime(Start,End))
+
+
+
