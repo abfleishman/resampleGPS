@@ -14,15 +14,15 @@
 #' @export
 
 AddDist2Colony<-function(data=data,CaptureSitesData=CapSitesSel,SiteName="SiteShort"){
-  dataOut<-vector(mode = "numeric")
+  dataOut<-vector(mode = "numeric",length = nrow(data))
   Sites<-as.character(unique(data[[SiteName]]))
-
+  
   for(j in 1:length(Sites)){
 
     CapSub<-CapSitesSel[CapSitesSel[SiteName]==Sites[j],]
     dataSub<-data[data[SiteName]==Sites[j],]
     distanceVector<-Dist2Colony(data = dataSub,ColonyLat = CapSub$Lat,ColonyLong = CapSub$Lon)
-    dataOut<- append(dataOut,distanceVector)
+    dataOut[data[SiteName]==Sites[j]]<- distanceVector
   }
   return(dataOut)
 }
