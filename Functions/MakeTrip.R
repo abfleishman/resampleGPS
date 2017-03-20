@@ -61,5 +61,5 @@ MakeTrip<-function(data,ID="File",DistCutOff=10,Dist2Colony="Dist2Colony"){
   # if not on a trip (within distance to colony threshold) than give a 0
   dataOut$TripNum[is.na(dataOut$TripNum)]<-0
 
-  return(select(dataOut,-InColony,-InColony2,-InColony4))
+  return(select(dataOut,-InColony))
 }
