@@ -77,14 +77,12 @@ dataT$InterPointTime<-InterpointTime(dataT,ID = "CaptureID",DateTime = "DateTime
 #deleates one point not eliminated by speed filter
 dataT <- dataT[-c(31830), ]
 
-datalt<-data
-coordinates(datalt)<-~Longitude+Latitude
-proj4string(datalt)<- CRS('+init=epsg:4326')
-datalt<-as.ltraj(xy = datalt,date = datalt$DateTime,id = datalt$CaptureNum,burst = paste(datalt$CaptureNum,datalt$TripNum))
-
-
-
-dataT<-filter(dataT,CaptureNum==35)
+datalt<-as.ltraj( cbind(dataT$Longitude,dataT$Latitude),date = dataT$DateTime,id = dataT$CaptureNum,burst = dataT$UniID,typeII = T,infolocs = dataT,proj4string = CRS('+init=epsg:4326'))
+head(datalt)
+datalt<-redisltraj(datalt,u=180,type = "time")
+dataT<-ld(datalt)
+head(dataT)
+dataT<-filter(dataT,id==35)
 
 # plot(dataT$Longitude[dataT$TripNum==0],dataT$Latitude[dataT$TripNum==0])
 # plot(dataT$Longitude[dataT$TripNum==1],dataT$Latitude[dataT$TripNum==1])
@@ -94,10 +92,10 @@ dataT<-filter(dataT,CaptureNum==35)
 # plot(dataT$DateTime)
 quartz()
 par(mfrow=c(4,1))
-plot(dataT$DateTime,dataT$Longitude)
-plot(dataT$DateTime,dataT$Latitude)
-plot(dataT$DateTime,dataT$TripNum)
-plot(dataT$DateTime,dataT$Dist2Colony>10)
+plot(dataT$date,dataT$x)
+plot(dataT$date,dataT$y)
+plot(dataT$date,dataT$dist)
+plot(dataT$date,dataT$R2n)
 head(dataT)
 
 dataT$Bering<-BearingFromPoint(dataIn = dataT,ID = "CaptureID",lat = "Latitude",lon = "Longitude")
