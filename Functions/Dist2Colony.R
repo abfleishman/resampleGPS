@@ -12,16 +12,11 @@
 #' @export
 Dist2Colony<-function(data,ColonyLat,ColonyLong){
   # Step 1: Two packages for mapping.####
-  library(rgdal)   # for readOGR(...); loads package sp as well
-  library(rgeos)   # for gDistance(...)
-
-  ColonyLong<- ColonyLong
-  ColonyLat<-  ColonyLat
 
   # Step 4a: Calculate distance from each point to the San Jorge center point.
-  Point2Colony<-NULL
+  Point2Colony<-vector(mode = "numeric",length = nrow(data))
   for(i in 1:length(data$Latitude)){ #this is a for loop
-    # This is a function to calculate distance between two points from the rgeos package
+    # This is a function to calculate distance between two points from the argosfilter package
     Point2Colony[i]<-distance(lat1 = ColonyLat,lon1 = ColonyLong ,lat2 = data$Latitude[i],lon2 = data$Longitude[i])
     Point2Colony
   }
