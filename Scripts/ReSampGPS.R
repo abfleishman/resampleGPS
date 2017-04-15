@@ -1,5 +1,3 @@
-# Script to identify trips 
-
 # Clear workspace
 rm(list = ls())
 
@@ -53,12 +51,10 @@ CapSitesSel<-select(CapSites,SiteShort,Lat, Lon)
 unique(data$SiteShort)[!unique(data$SiteShort)%in%CapSitesSel$SiteShort]
 # run the Dist2Colony function <- I couldn't get it to work right
 # uses distance (great circle from argosfilter, output in km)
-#data$Dist2Colony<-AddDist2Colony(data = data,CaptureSitesData = CapSitesSel)
-
 data$Dist2Colony<-AddDist2Colony(data = data,CaptureSitesData = CapSitesSel,SiteName = "SiteShort")
 
 # adds two columns ColonyMovement and TripNum  to the input, trims trips within a given distance (km) from colony, 
-# but trips must have 4 points to count (can be specified)
+
 dataT<-MakeTrip(data,ID = "CaptureID",DistCutOff = 10,Dist2Colony ="Dist2Colony") 
 
 # Adds in a unique identifier for each trip with year, capture number, and trip number
@@ -67,22 +63,61 @@ B<-str_pad(dataT$TripNum, width=3, pad="0")
 C<-str_pad(dataT$Band, width=4, pad="0")
 dataT$UniID<-paste0(dataT$Year,A,B,C)
 
-# ################################`
-##### Compiles general info for each trip from each bird
-# ################################
-
-dataT$InterPointDist<-InterpointDist(dataT,ID = "CaptureID",lat = "Latitude",lon = "Longitude")
-dataT$InterPointTime<-InterpointTime(dataT,ID = "CaptureID",DateTime = "DateTime")
 
 #deleates one point not eliminated by speed filter
 dataT <- dataT[-c(31830), ]
 
-datalt<-as.ltraj( cbind(dataT$Longitude,dataT$Latitude),date = dataT$DateTime,id = dataT$CaptureNum,burst = dataT$UniID,typeII = T,infolocs = dataT,proj4string = CRS('+init=epsg:4326'))
+# Interpolate to 180 seconds ----------------------------------------------
+dataTsp<-dataT
+coordinates(dataTsp)<- ~Longitude+Latitude
+proj4string(dataTsp) <-  CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+tracks <- spTransform(dataTsp,
+                      CRS("+proj=laea +lat_0=56 +lon_0=-156 +x_0=0 +y_0=0
+                          +ellps=WGS84 +units=m +no_defs"))
+tracks
+datalt<-as.ltraj( coordinates(dataTsp),date = dataT$DateTime,id = dataT$CaptureNum,burst = dataT$UniID,typeII = T,infolocs = dataT,proj4string =CRS("+proj=laea +lat_0=56 +lon_0=-156 +x_0=0 +y_0=0
+                          +ellps=WGS84 +units=m +no_defs"))
 head(datalt)
 datalt<-redisltraj(datalt,u=180,type = "time")
-dataT<-ld(datalt)
-head(dataT)
-dataT<-filter(dataT,id==35)
+datalt<-rec(datalt)
+fpt(datalt,r)
+dataTlt<-ld(datalt)
+head(dataTlt)
+dataTlt<-filter(dataTlt,burst==20150350030791)
+summary(dataTlt)
+head(dataTlt)
+dataTlt$speed<-(dataTlt$dist/dataTlt$dt)
+dataTlt$speed<-dataTlt$speed/180
+dataTlt$speed<-dataTlt$speed*60^2
+
+dataTlt$IPD<-InterpointDist(dataTlt,ID = "id",lat = "y",lon = "x")
+dataTlt$speed<-(dataTlt$IPD/dataTlt$dt)
+
+
+# Landings ----------------------------------------------------------------
+
+dataTlt$onwater<-dataTlt$speed<5
+dataTlt$landingNumber<-data.table::rleid(dataTlt$onwater)
+dataTlt$landingNumber[dataTlt$onwater==F]<-0
+
+dataTlt<-dataTlt %>% 
+  group_by(landingNumber) %>% 
+  mutate(numLandingPoints=n())
+
+ggplot(dataTlt[dataTlt$landingNumber!=0,],aes(x,y,colour=factor(landingNumber),size=numLandingPoints))+
+  geom_point()
+
+
+
+ggplot(dataTlt,aes(date,dist,colour=dist<.001))+geom_point()
+ggplot(dataTlt,aes(date,speed))+geom_smooth(span=.15)+geom_point()
+ggplot(dataTlt,aes(date,dist))+geom_smooth(span=.15)+geom_point()
+ggplot(dataTlt,aes(x,y,colour=speed<5))+geom_point()
+ggplot(dataTlt,aes(x,y,colour=date))+geom_point()
+plot(dataTlt$date,dataTlt$abs.angle)
+head(dataTlt)
+
+# dataT<-filter(dataT,CaptureNum==35)
 
 # plot(dataT$Longitude[dataT$TripNum==0],dataT$Latitude[dataT$TripNum==0])
 # plot(dataT$Longitude[dataT$TripNum==1],dataT$Latitude[dataT$TripNum==1])
