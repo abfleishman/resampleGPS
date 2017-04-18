@@ -11,7 +11,6 @@ library(stringr)
 library(lubridate)
 library(ggplot2)
 library(tidyr)
-
 library(argosfilter)
 
 # Load functions in the SGRK/Functions folder
